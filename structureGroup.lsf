@@ -1,0 +1,388 @@
+switchtolayout;
+#deleteall;
+clear;
+clc;
+deleteall;
+
+addstructuregroup;
+set("name","Input MMI");
+adduserprop("material",1,"Si (Silicon) - Palik");
+adduserprop("heater",1,"heater");
+
+adduserprop("base_angle",0,90);
+adduserprop("base_width",0,500e-9);
+adduserprop("base_height",0,220e-9);
+adduserprop("x_span",0,5e-6);
+adduserprop("y_span",0,5e-6);
+adduserprop("wv_l",0,2e-6);
+adduserprop("gap",0,0.4e-6);
+adduserprop("L_MMI",0,13e-6);
+adduserprop("W_MMI",0,2e-6);
+adduserprop("radius",0,3e-6);
+adduserprop("ySPAN",0,1e-6);
+adduserprop("m",0,1);
+
+
+
+
+
+adduserprop("PLength",0,5e-6);
+adduserprop("PC",0,5e-6); #Phase change section
+
+adduserprop("State",0,2);
+
+set("x",0);
+set("y",0);
+set("z",0);
+set("construction group",1);
+
+# define the setup script by setting the 'script' property.
+# Note that the entire script must be contained within a set of 
+# quote characters. Typically single quote characters are used
+# to contain the entire string, which allows double quotes to be
+# used within the script.
+
+####script for structure
+
+set('script','
+
+theta = asin( 0.5*ySPAN/radius ) * 180/pi;
+addrect;
+set("name", "MMIinput_DL");
+set("material", material);
+set("x max",wv_l-radius);
+set("x min", 0);
+set("y span" ,base_width);
+set("y" , -base_width/2);
+set("z" , 0);
+set("z span" ,base_height);
+
+select("MMIinput_DL");
+InputDL_y=get("y");
+InputDL_xmin=get("x min");
+InputDL_xmax=get("x max");
+InputDL_z=get("z");
+
+####################### taper section
+
+addcustom;
+set("x min",InputDL_xmax);
+set("x max",InputDL_xmax+radius * cos(theta*pi/180));
+set("z",InputDL_z);
+set("y" ,InputDL_y );
+set("name", "taper MMIimput DL");
+
+set("material", material);
+set("z span",base_height);
+set("y span",ySPAN);
+
+Ltaper = get("x span")*1e6;
+w1 = base_width*1e6/2;
+w2 = ySPAN*1e6/2;
+x0 = Ltaper/2;
+a = w2;
+alpha = (w1-w2)/Ltaper^m;
+format long;
+?equation = num2str(alpha)+"*("+num2str(x0)+"-x)^"+num2str(m)+"+"+num2str(a);
+set("equation 1",equation);
+format short;
+
+######################
+
+
+
+#addwaveguide;
+#set("y" , InputDL_y);
+#set("x", InputDL_xmin );
+#set("z", InputDL_z);
+
+#set("name","s-wg0");
+#set("detail",0.5);
+#set("material",material);
+#set("base angle",base_angle);
+#set("base height",base_height);
+#set("base width",base_width);
+#set("first axis","x");
+#set("rotation 1",180);
+#set("second axis","y");
+#set("rotation 2",180);
+
+#select("s-wg0");
+#set("poles",[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]);
+
+#if(get("base width")!=base_width) {
+    #?"Error: Base width cannot be set properly!";
+    #message("Error: Base width cannot be set properly!");
+#}
+#if(get("poles")!=[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]) {
+    #?"Error: Poles cannot be set properly!";
+    #message("Error: Poles cannot be set properly!");
+#}
+
+#addrect;
+#set("name", "input_DL");
+#set("material", material);
+#set("x max",InputDL_xmin-x_span);
+#set("x min", InputDL_xmin-x_span-wv_l);
+#set("y span" ,base_width);
+#set("y" , InputDL_y-y_span);#
+#set("z" , InputDL_z);
+#set("z span" ,base_height);
+####################################################
+
+
+
+addrect;
+set("name", "MMIinput_UL");
+set("material", material);
+set("x max",wv_l-radius);
+set("x min", 0);
+set("y span" ,base_width);
+set("y" , base_width/2+gap);
+set("z" , 0);
+set("z span" ,base_height);
+
+select("MMIinput_UL");
+InputUL_y=get("y");
+InputUL_xmin=get("x min");
+InputUL_z=get("z");
+
+
+####################### taper section
+addcustom;
+set("x min",InputDL_xmax);
+set("x max",InputDL_xmax+radius * cos(theta*pi/180));
+set("z",InputDL_z);
+set("y" ,InputUL_y );
+set("name", "MMIinput_UL taper");
+
+
+set("material", material);
+set("z span",base_height);
+set("y span",ySPAN);
+
+Ltaper = get("x span")*1e6;
+w1 = base_width*1e6/2;
+w2 = ySPAN*1e6/2;
+x0 = Ltaper/2;
+a = w2;
+alpha = (w1-w2)/Ltaper^m;
+format long;
+?equation = num2str(alpha)+"*("+num2str(x0)+"-x)^"+num2str(m)+"+"+num2str(a);
+set("equation 1",equation);
+format short;
+####################### taper section
+
+
+
+#addwaveguide;
+#set("y" , InputUL_y);
+#set("x", InputUL_xmin);
+#set("z", InputUL_z);
+
+#set("name","s-wg");
+#set("detail",0.5);
+#set("material",material);
+#set("base angle",base_angle);
+#set("base height",base_height);
+#set("base width",base_width);
+#set("first axis","y");
+#set("rotation 1",180);
+
+
+#select("s-wg");
+#set("poles",[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]);
+
+#if(get("base width")!=base_width) {
+    #?"Error: Base width cannot be set properly!";
+    #message("Error: Base width cannot be set properly!");
+#}
+#if(get("poles")!=[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]) {
+    #?"Error: Poles cannot be set properly!";
+    #message("Error: Poles cannot be set properly!");
+#}
+
+#addrect;
+#set("name", "input_UL");
+#set("material", material);
+#set("x max",InputUL_xmin-x_span);
+#set("x min", InputUL_xmin-x_span-wv_l);
+#set("y span" ,base_width);
+#set("y" , InputUL_y+y_span);
+#set("z" , InputUL_z);
+#set("z span" ,base_height);
+
+####################################################
+
+select("MMIinput_DL");
+InputDL_y=get("y");
+InputDL_xmax=get("x max");
+InputDL_z=get("z");
+
+select("taper MMIimput DL");
+xmaxtaper = get("x max");
+
+addrect;
+set("name", "MMI");
+set("material", material);
+set("x min", xmaxtaper);
+set("x max", L_MMI+xmaxtaper);
+set("y",gap/2);
+set("y span", W_MMI);
+set("z", InputDL_z);
+set("z span" ,base_height);
+####################################################
+
+select("MMI");
+MMIXmax=get("x max");
+
+
+
+
+#addwaveguide;
+#set("y" , OutputUM_y);
+#set("x", OutputUM_xmax);
+#set("z", OutputUM_z);
+
+#set("name","s-wg-UM");
+#set("detail",0.5);
+#set("material",material);
+#set("base angle",base_angle);
+#set("base height",base_height);
+#set("base width",base_width);
+#set("first axis","y");
+#set("rotation 1",180);
+
+
+#select("s-wg-UM");
+#set("poles",[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]);
+
+#if(get("base width")!=base_width) {
+    #?"Error: Base width cannot be set properly!";
+    #message("Error: Base width cannot be set properly!");
+#}
+#if(get("poles")!=[0,0;x_span/2,0;x_span/2,y_span;x_span,y_span]) {
+    #?"Error: Poles cannot be set properly!";
+    #message("Error: Poles cannot be set properly!");
+#}
+
+#addrect;
+#set("name", "Output_UM");
+#set("material", material);
+#set("x max",OutputUM_xmax+x_span+PLength);
+#set("x min", OutputUM_xmax+x_span);
+#set("y span" ,base_width);
+#set("y" , OutputUM_y+y_span);
+#set("z" , InputUL_z);
+#set("z span" ,base_height);
+
+####################################################
+
+#deleteall;
+select("MMI");
+MMIXmax=get("x max");
+
+####################### taper section
+addcustom;
+set("x min",MMIXmax);
+set("x max",MMIXmax+radius * cos(theta*pi/180));
+set("z",InputDL_z);
+set("y" ,InputUL_y );
+set("name", "MMIoutput_UL_taper");
+set("first axis","y");
+set("rotation 1",180);
+
+set("material", material);
+set("z span",base_height);
+set("y span",ySPAN);
+
+Ltaper = get("x span")*1e6;
+w1 = base_width*1e6/2;
+w2 = ySPAN*1e6/2;
+x0 = Ltaper/2;
+a = w2;
+alpha = (w1-w2)/Ltaper^m;
+format long;
+?equation = num2str(alpha)+"*("+num2str(x0)+"-x)^"+num2str(m)+"+"+num2str(a);
+set("equation 1",equation);
+format short;
+
+##############################
+select("MMIoutput_UL_taper");
+xminReverseTaper = get("x max");
+
+addrect;
+set("name", "MMIOutput_UM");
+set("material", material);
+set("x max",xminReverseTaper+wv_l);
+set("x min", xminReverseTaper);
+set("y span" ,base_width);
+set("y" , base_width/2+gap);
+set("z" , 0);
+set("z span" ,base_height);
+
+select("MMIOutput_UM");
+OutputUM_y=get("y");
+OutputUM_xmax=get("x max");
+OutputUM_z=get("z");
+##############################taper
+
+addcustom;
+set("x min",MMIXmax);
+set("x max",MMIXmax+radius * cos(theta*pi/180));
+set("z",InputDL_z);
+set("y" ,InputDL_y );
+set("name", "MMIoutput_UL_taper");
+set("first axis","y");
+set("rotation 1",180);
+
+set("material", material);
+set("z span",base_height);
+set("y span",ySPAN);
+
+Ltaper = get("x span")*1e6;
+w1 = base_width*1e6/2;
+w2 = ySPAN*1e6/2;
+x0 = Ltaper/2;
+a = w2;
+alpha = (w1-w2)/Ltaper^m;
+format long;
+?equation = num2str(alpha)+"*("+num2str(x0)+"-x)^"+num2str(m)+"+"+num2str(a);
+set("equation 1",equation);
+format short;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+addrect;
+set("name", "MMIOutput_LM"); #lower mid
+set("material", material);
+set("x max",xminReverseTaper+wv_l);
+set("x min", xminReverseTaper);
+set("y span" ,base_width);
+set("y" , -base_width/2);
+set("z" , 0);
+set("z span" ,base_height);
+
+select("MMIOutput_LM");
+OutputLM_y=get("y");
+OutputLM_xmax=get("x max");
+OutputLM_z=get("z");
+
+');
+ 
+ 
+
+
+

@@ -1,0 +1,21 @@
+m={"Ttot",""};
+#m={"drop","add","through","input"};     # monitor name
+format short;
+for (i=1:length(m)){
+f=getdata(m{i},"f");
+Lambda = c/f*1e6;
+T=real(transmission(m{i}));
+if (m{i}=="monitor_1"){
+    T= -1*T;
+    }
+T=10*log10(T);
+T = real(T);
+datatostore = [Lambda,T];
+if (m{i}=="monitor_1"){
+    T_drop= T;
+    }
+write(m{i}+".txt",num2str(datatostore), "overwrite");
+plot(c/f*1e6,T,"wavelength(um)","transmission (dB)"); 
+}
+
+
